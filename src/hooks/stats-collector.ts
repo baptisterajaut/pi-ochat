@@ -1,15 +1,29 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { resetForTurn, markFirstToken, commitTurn, formatStatusLine, getSharedStats } from "../stats.js";
+import {
+  resetForTurn,
+  markFirstToken,
+  commitTurn,
+  formatStatusLine,
+  formatLiveLine,
+  getSharedStats,
+} from "../stats.js";
+
+const STATUS_KEY = "ochat-stats";
+const THROTTLE_MS = 250;
 
 export function registerStatsCollector(pi: ExtensionAPI): void {
   const state = getSharedStats();
+  let lastPushMs = 0;
 
-  pi.on("before_provider_request", async (_event, _ctx) => {
+  pi.on("before_provider_request", async (_event, ctx) => {
     resetForTurn(state, Date.now());
+    lastPushMs = 0;
+    ctx.ui.setStatus(STATUS_KEY, "⏱ waiting first token…");
   });
 
-  pi.on("message_update", async (event, _ctx) => {
-    markFirstToken(state, Date.now());
+  pi.on("message_update", async (event, ctx) => {
+    const now = Date.now();
+    markFirstToken(state, now);
     const msg = event.message;
     if (msg.role === "assistant" && Array.isArray(msg.content)) {
       let chars = 0;
@@ -19,6 +33,11 @@ export function registerStatsCollector(pi: ExtensionAPI): void {
         }
       }
       state.charsAccum = chars;
+    }
+    if (now - lastPushMs >= THROTTLE_MS) {
+      lastPushMs = now;
+      const live = formatLiveLine(state, now);
+      if (live) ctx.ui.setStatus(STATUS_KEY, live);
     }
   });
 
@@ -30,6 +49,6 @@ export function registerStatsCollector(pi: ExtensionAPI): void {
     const ctxPct = ctxUsage?.percent ?? null;
     commitTurn(state, Date.now(), totalTokens, ctxPct);
     const line = formatStatusLine(state);
-    if (line) ctx.ui.setStatus("ochat-stats", line);
+    if (line) ctx.ui.setStatus(STATUS_KEY, line);
   });
 }

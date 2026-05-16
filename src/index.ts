@@ -13,6 +13,7 @@ import { registerToggleCommands } from "./commands/toggles.js";
 import { registerAutoSuggest } from "./hooks/auto-suggest.js";
 import { registerStreamBuffer } from "./hooks/stream-buffer.js";
 import { registerHelpCommand } from "./commands/help.js";
+import { registerHeader } from "./hooks/header.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
 import { loadConfig } from "./config.js";
@@ -40,6 +41,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   }
 
   const detected = await detectAndRegisterBackends(pi);
+  registerHeader(pi, detected);
   registerSystemPromptHook(pi);
   registerPersonalityCommands(pi);
   registerProfileCommand(pi);

@@ -2,6 +2,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { paths } from "../paths.js";
 import { loadConfig, saveConfig } from "../config.js";
 import { listProfiles, loadProfile } from "../profiles.js";
+import { refreshHeader } from "../hooks/header.js";
 
 export function registerProfileCommand(pi: ExtensionAPI): void {
   pi.registerCommand("profile", {
@@ -66,6 +67,7 @@ export function registerProfileCommand(pi: ExtensionAPI): void {
       });
 
       ctx.ui.setStatus("ochat-profile", `profile: ${pickName}`);
+      refreshHeader();
       ctx.ui.notify(`profile: ${pickName} → ${profile.model}`, "info");
     },
   });

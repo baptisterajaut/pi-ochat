@@ -2,6 +2,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { paths } from "../paths.js";
 import { loadConfig, saveConfig } from "../config.js";
 import { listPersonalities } from "../personalities.js";
+import { refreshHeader } from "../hooks/header.js";
 
 export function registerPersonalityCommands(pi: ExtensionAPI): void {
   const handler = async (args: string, ctx: import("@earendil-works/pi-coding-agent").ExtensionCommandContext) => {
@@ -33,6 +34,7 @@ export function registerPersonalityCommands(pi: ExtensionAPI): void {
     }
 
     saveConfig(paths.configFile(), { ...config, personality: pick });
+    refreshHeader();
     ctx.ui.notify(`personality: ${pick}`, "info");
   };
 

@@ -6,6 +6,10 @@
 # --launcher        : also drop a ~/bin/pi-ochat symlink to the launcher script.
 # --launcher-only   : skip the extensions symlink, only create the launcher (keeps
 #                     vanilla `pi` untouched; `pi-ochat` explicitly loads us).
+# --bind-ochat-keys : also unbind the pi built-ins on ctrl+l, ctrl+r, ctrl+u, ctrl+g
+#                     in ~/.pi/agent/keybindings.json so the ochat shortcuts work
+#                     cleanly without 'Extension issues' warnings. Backs up any
+#                     existing keybindings.json.
 #
 # Idempotent. Safe to re-run.
 
@@ -16,12 +20,14 @@ REPO_DIR="$(pwd)"
 
 LAUNCHER=0
 EXT_SYMLINK=1
+BIND_KEYS=0
 for arg in "$@"; do
   case "$arg" in
     --launcher)        LAUNCHER=1 ;;
     --launcher-only)   LAUNCHER=1 ; EXT_SYMLINK=0 ;;
+    --bind-ochat-keys) BIND_KEYS=1 ;;
     -h|--help)
-      sed -n '2,11p' "$0"
+      sed -n '2,15p' "$0"
       exit 0
       ;;
     *) echo "Unknown flag: $arg" >&2 ; exit 2 ;;
@@ -69,6 +75,31 @@ if [ "$LAUNCHER" = "1" ]; then
   esac
 fi
 
+if [ "$BIND_KEYS" = "1" ]; then
+  KB_DIR="$HOME/.pi/agent"
+  KB_FILE="$KB_DIR/keybindings.json"
+  mkdir -p "$KB_DIR"
+  if [ -e "$KB_FILE" ]; then
+    BACKUP="$KB_FILE.bak.$(date +%Y%m%d-%H%M%S)"
+    cp "$KB_FILE" "$BACKUP"
+    echo "==> backed up existing keybindings to $BACKUP"
+  fi
+  node - "$KB_FILE" <<'JS'
+const { readFileSync, writeFileSync, existsSync } = require("node:fs");
+const path = process.argv[2];
+const existing = existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : {};
+const overrides = {
+  "app.model.select": [],          // frees ctrl+l for ochat /clear
+  "app.editor.external": [],       // frees ctrl+g for ochat /impersonate
+  "app.session.rename": [],        // silences ctrl+r conflict warning
+  "app.tree.filter.userOnly": [],  // silences ctrl+u conflict warning
+};
+const merged = { ...existing, ...overrides };
+writeFileSync(path, JSON.stringify(merged, null, 2) + "\n");
+JS
+  echo "==> ochat keybindings written to $KB_FILE"
+fi
+
 echo ""
 echo "Done."
 if [ "$EXT_SYMLINK" = "1" ]; then
@@ -76,4 +107,7 @@ if [ "$EXT_SYMLINK" = "1" ]; then
 fi
 if [ "$LAUNCHER" = "1" ]; then
   echo "  - Or run 'pi-ochat' to launch pi with this extension explicitly."
+fi
+if [ "$BIND_KEYS" = "1" ]; then
+  echo "  - ctrl+l/r/u/g now belong to pi-ochat (pi built-ins unbound)."
 fi

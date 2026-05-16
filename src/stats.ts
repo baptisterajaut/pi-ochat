@@ -59,6 +59,20 @@ export function formatStatusLine(s: StatsState): string {
   return `${tps} t/s${ctxFrag}`;
 }
 
+/**
+ * Live status during streaming. Uses chars/4 as a rolling token estimate since
+ * provider usage is only delivered at message_end.
+ */
+export function formatLiveLine(s: StatsState, now: number): string {
+  if (s.t0 === null) return "";
+  if (s.t1 === null) return "⏱ waiting first token…";
+  const ttftMs = s.t1 - s.t0;
+  const elapsed = Math.max(0.001, (now - s.t1) / 1000);
+  const tokens = Math.round(s.charsAccum / 4);
+  const tps = (tokens / elapsed).toFixed(1);
+  return `TTFT ${ttftMs}ms · ~${tps} t/s · ~${tokens} tok`;
+}
+
 export function formatDetail(s: StatsState): string {
   if (!s.last) return "No measurement yet.";
   return [
