@@ -2,23 +2,30 @@
 
 ochat workflow as a pi extension: personalities, profiles, `/retry`, `/undo`, `/impersonate`, `/stats`, double-press destructive shortcuts. Designed for pi v0.74+.
 
-## Install (global)
+## Install
 
 ```bash
-mkdir -p ~/.pi/agent/extensions
-git clone <git url> ~/.pi/agent/extensions/pi-ochat
-cd ~/.pi/agent/extensions/pi-ochat
-npm install
+git clone <git url> pi-ochat
+cd pi-ochat
+./install.sh              # npm install + symlink into ~/.pi/agent/extensions/pi-ochat
 ```
 
-Pi discovers the extension via the `pi` field in `package.json` and loads it on every pi run.
+After `./install.sh`, every `pi` invocation auto-loads the extension. The script is idempotent and safe to re-run after `git pull`.
 
-## Install (dev loop)
+### Variants
+
+```bash
+./install.sh --launcher       # also drop ~/bin/pi-ochat that calls `pi -e ./src/index.ts`
+./install.sh --launcher-only  # skip the global symlink; only create the launcher.
+                              # Useful when you want vanilla `pi` for some sessions and `pi-ochat` for others.
+```
+
+### Dev loop (without symlink)
 
 ```bash
 git clone <git url> /tmp/pi-ochat
 cd /tmp/pi-ochat && npm install
-pi -e ./src/index.ts
+./node_modules/.bin/pi -e ./src/index.ts
 ```
 
 ## Files
