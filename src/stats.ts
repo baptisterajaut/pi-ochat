@@ -27,11 +27,13 @@ export function markFirstToken(s: StatsState, now: number): void {
   if (s.t1 === null) s.t1 = now;
 }
 
-export function addChunkChars(s: StatsState, chars: number): void {
-  s.charsAccum += chars;
-}
-
-/** Commit measurement at message_end. tokens = from usage if known, else chars/4 fallback. */
+/**
+ * Commit measurement at message_end. tokens = from usage if known, else chars/4 fallback.
+ * Note: callers (stats-collector) set `s.charsAccum` by *assignment* to the cumulative
+ * text length seen so far on each `message_update`, not by delta. Pi's `message_update`
+ * carries the full assistant message at each step, so this works. If pi ever switches
+ * to delta-only updates, this fallback will under-count tokens.
+ */
 export function commitTurn(
   s: StatsState,
   now: number,
