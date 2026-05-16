@@ -8,6 +8,7 @@ import { registerStatsCommands } from "./commands/stats.js";
 import { registerStatsCollector } from "./hooks/stats-collector.js";
 import { registerShortcuts } from "./shortcuts.js";
 import { registerRetryCommand } from "./commands/retry.js";
+import { registerUndoCommand } from "./commands/undo.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
 import { fileURLToPath } from "node:url";
@@ -27,6 +28,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   registerStatsCommands(pi);
   registerShortcuts(pi);
   registerRetryCommand(pi);
+  registerUndoCommand(pi);
 
   pi.on("session_start", async (_event, ctx) => {
     if (detected.length === 0) {
