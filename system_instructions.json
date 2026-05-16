@@ -1,0 +1,5 @@
+{
+  "impersonate": "Generate what the USER would say next in this conversation. Reply with the user message text only, no preamble or framing. Long-form welcome (a few sentences).",
+  "impersonate_short": "Generate a short suggestion (under 15 words) for what the user might say next. Reply with the text only — no preamble, no quotes.",
+  "compact": "Summarize the conversation so far so I can resume later. Keep goals, decisions, open questions, and next steps."
+}
