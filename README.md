@@ -5,7 +5,7 @@ ochat workflow as a pi extension: personalities, profiles, `/retry`, `/undo`, `/
 ## Install
 
 ```bash
-git clone <git url> pi-ochat
+git clone git@github.com:baptisterajaut/pi-ochat.git pi-ochat
 cd pi-ochat
 ./install.sh              # npm install + symlink into ~/.pi/agent/extensions/pi-ochat
 ```
@@ -30,7 +30,7 @@ After `./install.sh`, every `pi` invocation auto-loads the extension. The script
 ### Dev loop (without symlink)
 
 ```bash
-git clone <git url> /tmp/pi-ochat
+git clone git@github.com:baptisterajaut/pi-ochat.git /tmp/pi-ochat
 cd /tmp/pi-ochat && npm install
 ./node_modules/.bin/pi -e ./src/index.ts
 ```
