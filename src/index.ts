@@ -3,6 +3,7 @@ import { detectAndRegisterBackends } from "./backend-detect.js";
 import { registerSystemPromptHook } from "./hooks/system-prompt.js";
 import { registerPersonalityCommands } from "./commands/personality.js";
 import { registerProfileCommand } from "./commands/profile.js";
+import { registerImpersonateCommands } from "./commands/impersonate.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   registerSystemPromptHook(pi);
   registerPersonalityCommands(pi);
   registerProfileCommand(pi);
+  registerImpersonateCommands(pi);
 
   pi.on("session_start", async (_event, ctx) => {
     if (detected.length === 0) {
