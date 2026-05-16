@@ -15,6 +15,7 @@ import { registerStreamBuffer } from "./hooks/stream-buffer.js";
 import { registerHelpCommand } from "./commands/help.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
+import { loadConfig } from "./config.js";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -44,5 +45,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
     } else {
       ctx.ui.notify(`pi-ochat: detected ${detected.join(", ")}`, "info");
     }
+    const cfg = loadConfig(paths.configFile());
+    if (cfg.profile) ctx.ui.setStatus("ochat-profile", `profile: ${cfg.profile}`);
   });
 }
