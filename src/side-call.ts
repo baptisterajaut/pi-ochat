@@ -11,6 +11,12 @@ export interface SideCallResult {
 /**
  * Run a one-shot completion using the current model + user-controlled history.
  * Returns plain text. The caller owns the AbortController.
+ *
+ * Intentionally omits `reasoningEffort` so /impersonate and /imps don't waste
+ * tokens on reasoning. For local backends declared as qwen-chat-template/qwen/
+ * zai/deepseek (our auto-detected Ollama+llama.cpp), pi-ai turns this into
+ * `enable_thinking: false` (resp. `thinking: { type: "disabled" }`). For models
+ * whose thinking can't be toggled via API (Claude/GPT5-thinking), defaults apply.
  */
 export async function sideCallText(
   ctx: ExtensionContext,
