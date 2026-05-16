@@ -18,9 +18,13 @@ After `./install.sh`, every `pi` invocation auto-loads the extension. The script
 ./install.sh --launcher           # also drop ~/bin/pi-ochat that calls `pi -e ./src/index.ts`
 ./install.sh --launcher-only      # skip the global symlink; only create the launcher.
                                   # Useful when you want vanilla `pi` for some sessions and `pi-ochat` for others.
-./install.sh --bind-ochat-keys    # unbind pi built-ins on ctrl+l/r/u/g so the ochat shortcuts
-                                  # work cleanly without 'Extension issues' warnings.
-                                  # Merges into ~/.pi/agent/keybindings.json, backs up existing.
+./install.sh --bind-ochat-keys    # unbind pi built-ins on ctrl+l/r/u/g (6 keybinding ids:
+                                  # app.model.select, app.tree.filter.labeledOnly,
+                                  # app.tree.filter.userOnly, tui.editor.deleteToLineStart,
+                                  # app.editor.external, app.session.rename) AND set
+                                  # quietStartup=true to hide pi's [Context]/[Extensions]
+                                  # boot banners. Merges into ~/.pi/agent/{keybindings,settings}.json,
+                                  # backs up both before modifying.
 ```
 
 ### Dev loop (without symlink)
@@ -39,7 +43,7 @@ cd /tmp/pi-ochat && npm install
 
 ## UI
 
-- **Header line** (`pi-ochat · backend · model · personality: X · profile: Y`) is installed via `ctx.ui.setHeader` on session start and refreshes on `/p`, `/profile`, `/config`, and model switches.
+- **ASCII-art "ochat" header** with a purple→pink gradient and a subtitle line `backend · model · personality: X · profile: Y`, installed via `ctx.ui.setHeader` on session start. Refreshes on `/p`, `/profile`, `/config`, and model switches.
 - **Live TPS status** (`TTFT 320ms · ~42 t/s · ~1.2k tok`) is pushed to the status bar via `ctx.ui.setStatus("ochat-stats", …)` during streaming (throttled at 250ms). On message end the line becomes the committed measurement (`42.5 t/s · ctx 31%`).
 
 ## Commands
@@ -65,7 +69,7 @@ Pi natives keep working: `/compact`, `/tree`, `/fork`, `/clone`, `/new`, `/resum
 
 `Ctrl+L` clear, `Ctrl+R` retry, `Ctrl+U` undo — all require a double-press within 2 seconds. `Ctrl+G` triggers `/impersonate` when the editor is empty.
 
-Pi reserves `ctrl+l` (model select) and `ctrl+g` (external editor) — by default these ochat shortcuts are silently dropped and `ctrl+r`/`ctrl+u` log a startup warning. Run `./install.sh --bind-ochat-keys` to unbind those four pi built-ins in `~/.pi/agent/keybindings.json`. After that, all four ochat shortcuts work and the warnings disappear.
+Pi reserves several of these keys. `ctrl+l` is bound to both `app.model.select` and `app.tree.filter.labeledOnly`, `ctrl+u` to both `app.tree.filter.userOnly` and `tui.editor.deleteToLineStart`, `ctrl+g` to `app.editor.external`, `ctrl+r` to `app.session.rename`. Out of the box, the reserved-override ones silently drop our shortcuts and the others log a startup warning. Run `./install.sh --bind-ochat-keys` to unbind all six pi built-ins in `~/.pi/agent/keybindings.json`. After that, all four ochat shortcuts work and the warnings disappear.
 
 ## Migrating from ochat (Python)
 

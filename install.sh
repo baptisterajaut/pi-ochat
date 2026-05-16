@@ -8,8 +8,10 @@
 #                     vanilla `pi` untouched; `pi-ochat` explicitly loads us).
 # --bind-ochat-keys : also unbind the pi built-ins on ctrl+l, ctrl+r, ctrl+u, ctrl+g
 #                     in ~/.pi/agent/keybindings.json so the ochat shortcuts work
-#                     cleanly without 'Extension issues' warnings. Backs up any
-#                     existing keybindings.json.
+#                     cleanly without 'Extension issues' warnings, AND set
+#                     quietStartup=true in ~/.pi/agent/settings.json to hide pi's
+#                     boot banners ([Context], [Extensions], [Skills]).
+#                     Backs up both files before modifying.
 #
 # Idempotent. Safe to re-run.
 
@@ -27,7 +29,7 @@ for arg in "$@"; do
     --launcher-only)   LAUNCHER=1 ; EXT_SYMLINK=0 ;;
     --bind-ochat-keys) BIND_KEYS=1 ;;
     -h|--help)
-      sed -n '2,15p' "$0"
+      sed -n '2,16p' "$0"
       exit 0
       ;;
     *) echo "Unknown flag: $arg" >&2 ; exit 2 ;;
@@ -89,15 +91,37 @@ const { readFileSync, writeFileSync, existsSync } = require("node:fs");
 const path = process.argv[2];
 const existing = existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : {};
 const overrides = {
-  "app.model.select": [],          // frees ctrl+l for ochat /clear
-  "app.editor.external": [],       // frees ctrl+g for ochat /impersonate
-  "app.session.rename": [],        // silences ctrl+r conflict warning
-  "app.tree.filter.userOnly": [],  // silences ctrl+u conflict warning
+  // ctrl+l — pi binds it twice (model picker + tree filter); both must go.
+  "app.model.select": [],
+  "app.tree.filter.labeledOnly": [],
+  // ctrl+u — pi binds it twice (tree filter + delete-to-line-start); both must go.
+  "app.tree.filter.userOnly": [],
+  "tui.editor.deleteToLineStart": [],
+  // ctrl+g — pi reserves it for external editor.
+  "app.editor.external": [],
+  // ctrl+r — pi uses it for session rename.
+  "app.session.rename": [],
 };
 const merged = { ...existing, ...overrides };
 writeFileSync(path, JSON.stringify(merged, null, 2) + "\n");
 JS
   echo "==> ochat keybindings written to $KB_FILE"
+
+  # Pi's quietStartup hides [Context], [Extensions], [Skills], etc. banners on
+  # boot. Sticky in ~/.pi/agent/settings.json (also toggleable via pi /settings).
+  SETTINGS_FILE="$HOME/.pi/agent/settings.json"
+  if [ -e "$SETTINGS_FILE" ]; then
+    BACKUP="$SETTINGS_FILE.bak.$(date +%Y%m%d-%H%M%S)"
+    cp "$SETTINGS_FILE" "$BACKUP"
+  fi
+  node - "$SETTINGS_FILE" <<'JS'
+const { readFileSync, writeFileSync, existsSync } = require("node:fs");
+const path = process.argv[2];
+const existing = existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : {};
+existing.quietStartup = true;
+writeFileSync(path, JSON.stringify(existing, null, 2) + "\n");
+JS
+  echo "==> quietStartup=true set in $SETTINGS_FILE"
 fi
 
 echo ""
@@ -110,4 +134,5 @@ if [ "$LAUNCHER" = "1" ]; then
 fi
 if [ "$BIND_KEYS" = "1" ]; then
   echo "  - ctrl+l/r/u/g now belong to pi-ochat (pi built-ins unbound)."
+  echo "  - quietStartup enabled; pi boot banners hidden."
 fi
