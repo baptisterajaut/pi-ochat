@@ -16,14 +16,29 @@ import { registerHelpCommand } from "./commands/help.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
 import { loadConfig } from "./config.js";
+import { existsSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { homedir } from "node:os";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const bundledPersonalitiesDir = join(here, "..", "personalities");
 
 export default async function (pi: ExtensionAPI): Promise<void> {
   ensureBundledPersonalities(bundledPersonalitiesDir, paths.personalitiesDir());
+
+  const legacyOchat = join(homedir(), ".config", "ochat");
+  const noticeFile = join(paths.agentDir(), ".pi-ochat-migration-shown");
+  if (existsSync(legacyOchat) && !existsSync(noticeFile)) {
+    pi.on("session_start", async (_event, ctx) => {
+      ctx.ui.notify(
+        "pi-ochat: legacy ~/.config/ochat detected. See README for migration steps.",
+        "info",
+      );
+    });
+    writeFileSync(noticeFile, new Date().toISOString());
+  }
+
   const detected = await detectAndRegisterBackends(pi);
   registerSystemPromptHook(pi);
   registerPersonalityCommands(pi);
