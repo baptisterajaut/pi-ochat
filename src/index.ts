@@ -1,6 +1,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { detectAndRegisterBackends } from "./backend-detect.js";
 import { registerSystemPromptHook } from "./hooks/system-prompt.js";
+import { registerPersonalityCommands } from "./commands/personality.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
 import { fileURLToPath } from "node:url";
@@ -13,6 +14,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   ensureBundledPersonalities(bundledPersonalitiesDir, paths.personalitiesDir());
   const detected = await detectAndRegisterBackends(pi);
   registerSystemPromptHook(pi);
+  registerPersonalityCommands(pi);
 
   pi.on("session_start", async (_event, ctx) => {
     if (detected.length === 0) {
