@@ -6,6 +6,7 @@ import { registerProfileCommand } from "./commands/profile.js";
 import { registerImpersonateCommands } from "./commands/impersonate.js";
 import { registerStatsCommands } from "./commands/stats.js";
 import { registerStatsCollector } from "./hooks/stats-collector.js";
+import { registerShortcuts } from "./shortcuts.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
 import { fileURLToPath } from "node:url";
@@ -23,6 +24,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   registerImpersonateCommands(pi);
   registerStatsCollector(pi);
   registerStatsCommands(pi);
+  registerShortcuts(pi);
 
   pi.on("session_start", async (_event, ctx) => {
     if (detected.length === 0) {
