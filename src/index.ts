@@ -4,6 +4,7 @@ import { registerSystemPromptHook } from "./hooks/system-prompt.js";
 import { registerPersonalityCommands } from "./commands/personality.js";
 import { registerProfileCommand } from "./commands/profile.js";
 import { registerImpersonateCommands } from "./commands/impersonate.js";
+import { registerStatsCommands } from "./commands/stats.js";
 import { registerStatsCollector } from "./hooks/stats-collector.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
@@ -21,6 +22,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   registerProfileCommand(pi);
   registerImpersonateCommands(pi);
   registerStatsCollector(pi);
+  registerStatsCommands(pi);
 
   pi.on("session_start", async (_event, ctx) => {
     if (detected.length === 0) {
