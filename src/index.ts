@@ -1,7 +1,14 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { detectAndRegisterBackends } from "./backend-detect.js";
 
-export default function (pi: ExtensionAPI): void {
+export default async function (pi: ExtensionAPI): Promise<void> {
+  const detected = await detectAndRegisterBackends(pi);
+
   pi.on("session_start", async (_event, ctx) => {
-    ctx.ui.notify("pi-ochat loaded", "info");
+    if (detected.length === 0) {
+      ctx.ui.notify("pi-ochat: no local backends detected", "info");
+    } else {
+      ctx.ui.notify(`pi-ochat: detected ${detected.join(", ")}`, "info");
+    }
   });
 }
