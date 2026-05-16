@@ -44,7 +44,12 @@ async function tryOllama(pi: ExtensionAPI): Promise<boolean> {
     models: json.models.map((m) => ({
       id: m.name,
       name: m.name,
-      reasoning: false,
+      // reasoning: true + qwen-chat-template lets /thinking off send
+      // `chat_template_kwargs.enable_thinking: false` (ochat parity for Qwen3/
+      // DeepSeek-style models). Ollama's OpenAI-compat endpoint may ignore the
+      // field; native `think` parameter isn't reachable from this route.
+      reasoning: true,
+      compat: { thinkingFormat: "qwen-chat-template" },
       input: ["text"] as ("text" | "image")[],
       cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
       contextWindow: 32768,
@@ -67,7 +72,10 @@ async function tryLlamaCpp(pi: ExtensionAPI): Promise<boolean> {
     models: json.data.map((m) => ({
       id: m.id,
       name: m.id,
-      reasoning: false,
+      // ochat used to send chat_template_kwargs.enable_thinking on the same
+      // route. qwen-chat-template makes pi-ai do the same when /thinking off.
+      reasoning: true,
+      compat: { thinkingFormat: "qwen-chat-template" },
       input: ["text"] as ("text" | "image")[],
       cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
       contextWindow: 32768,
