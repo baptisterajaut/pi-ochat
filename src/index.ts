@@ -7,6 +7,7 @@ import { registerImpersonateCommands } from "./commands/impersonate.js";
 import { registerStatsCommands } from "./commands/stats.js";
 import { registerStatsCollector } from "./hooks/stats-collector.js";
 import { registerShortcuts } from "./shortcuts.js";
+import { registerRetryCommand } from "./commands/retry.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
 import { fileURLToPath } from "node:url";
@@ -25,6 +26,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   registerStatsCollector(pi);
   registerStatsCommands(pi);
   registerShortcuts(pi);
+  registerRetryCommand(pi);
 
   pi.on("session_start", async (_event, ctx) => {
     if (detected.length === 0) {
