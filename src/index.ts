@@ -14,6 +14,7 @@ import { registerAutoSuggest } from "./hooks/auto-suggest.js";
 import { registerStreamBuffer } from "./hooks/stream-buffer.js";
 import { registerHelpCommand } from "./commands/help.js";
 import { registerHeader } from "./hooks/header.js";
+import { registerCtrlCHint } from "./hooks/ctrlc-hint.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
 import { loadConfig } from "./config.js";
@@ -55,6 +56,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   registerAutoSuggest(pi);
   registerStreamBuffer(pi);
   registerHelpCommand(pi);
+  registerCtrlCHint(pi);
 
   pi.on("session_start", async (_event, ctx) => {
     if (detected.length === 0) {
