@@ -113,6 +113,7 @@ JS
   if [ -e "$SETTINGS_FILE" ]; then
     BACKUP="$SETTINGS_FILE.bak.$(date +%Y%m%d-%H%M%S)"
     cp "$SETTINGS_FILE" "$BACKUP"
+    echo "==> backed up existing settings to $BACKUP"
   fi
   node - "$SETTINGS_FILE" <<'JS'
 const { readFileSync, writeFileSync, existsSync } = require("node:fs");

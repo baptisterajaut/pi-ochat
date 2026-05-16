@@ -13,13 +13,15 @@ const HINT_KEY = "ochat-ctrlc-hint";
  * via registerShortcut), so this is the cleanest route.
  */
 export function registerCtrlCHint(pi: ExtensionAPI): void {
+  let lastPressMs = 0;
+  let clearTimer: NodeJS.Timeout | null = null;
+  let unsubscribe: (() => void) | null = null;
+
   pi.on("session_start", async (_event, ctx) => {
     if (!ctx.hasUI) return;
 
-    let lastPressMs = 0;
-    let clearTimer: NodeJS.Timeout | null = null;
-
-    ctx.ui.onTerminalInput((data) => {
+    lastPressMs = 0;
+    unsubscribe = ctx.ui.onTerminalInput((data) => {
       if (data !== "\x03") return undefined;
       const now = Date.now();
       const isDouble = now - lastPressMs < PI_CTRLC_WINDOW_MS;
@@ -38,5 +40,16 @@ export function registerCtrlCHint(pi: ExtensionAPI): void {
       }
       return undefined;
     });
+  });
+
+  pi.on("session_shutdown", async () => {
+    if (clearTimer) {
+      clearTimeout(clearTimer);
+      clearTimer = null;
+    }
+    if (unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
   });
 }

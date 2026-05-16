@@ -1,5 +1,5 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { loadConfig } from "../config.js";
+import { loadConfig, type OchatConfig } from "../config.js";
 import { paths } from "../paths.js";
 
 const RESET = "\x1b[0m";
@@ -25,16 +25,23 @@ const TITLE_LINES = [
 interface HeaderState {
   modelId: string;
   detected: string[];
+  config: OchatConfig | null;
   requestRender: (() => void) | null;
 }
 
 const state: HeaderState = {
   modelId: "no model selected",
   detected: [],
+  config: null,
   requestRender: null,
 };
 
+function reloadConfig(): void {
+  state.config = loadConfig(paths.configFile());
+}
+
 export function refreshHeader(): void {
+  reloadConfig();
   state.requestRender?.();
 }
 
@@ -72,12 +79,12 @@ function center(text: string, width: number): string {
 }
 
 function subtitleText(): string {
-  const cfg = loadConfig(paths.configFile());
+  const cfg = state.config;
   const parts: string[] = [];
   if (state.detected.length > 0) parts.push(state.detected.join("+"));
   parts.push(state.modelId);
-  if (cfg.personality) parts.push(`personality: ${cfg.personality}`);
-  if (cfg.profile) parts.push(`profile: ${cfg.profile}`);
+  if (cfg?.personality) parts.push(`personality: ${cfg.personality}`);
+  if (cfg?.profile) parts.push(`profile: ${cfg.profile}`);
   return parts.join("  ·  ");
 }
 
@@ -96,6 +103,7 @@ export function registerHeader(pi: ExtensionAPI, detected: string[]): void {
 
   pi.on("session_start", async (_event, ctx) => {
     state.modelId = ctx.model?.id ?? "no model selected";
+    reloadConfig();
     if (!ctx.hasUI) return;
     ctx.ui.setHeader((tui) => {
       state.requestRender = () => tui.requestRender();
