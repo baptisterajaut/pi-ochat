@@ -11,15 +11,16 @@
     "dev": "pi -e ./src/index.ts"
   },
   "pi": {
-    "extensions": ["./src/index.ts"]
+    "extensions": [
+      "./src/index.ts"
+    ]
   },
-  "dependencies": {},
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "^0.74.0",
-    "@earendil-works/pi-ai": "^0.74.0",
-    "@earendil-works/pi-tui": "^0.74.0",
+    "@earendil-works/pi-ai": "^0.74.1",
+    "@earendil-works/pi-coding-agent": "^0.74.1",
+    "@earendil-works/pi-tui": "^0.74.1",
+    "@types/node": "^20.11.0",
     "typescript": "^5.4.0",
-    "vitest": "^1.6.0",
-    "@types/node": "^20.11.0"
+    "vitest": "^1.6.0"
   }
 }

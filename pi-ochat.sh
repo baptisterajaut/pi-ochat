@@ -37,7 +37,13 @@ case "${1:-}" in
     echo "==> updating pi-ochat in $REPO_DIR"
     cd "$REPO_DIR"
     git pull --ff-only
-    npm install
+    # Force-bump pi packages to latest. package.json uses "latest" but npm
+    # still pins the resolved version in package-lock.json; @latest rewrites
+    # both. We don't pin pi: pi-ochat tracks whatever pi releases.
+    npm install \
+      @earendil-works/pi-coding-agent@latest \
+      @earendil-works/pi-ai@latest \
+      @earendil-works/pi-tui@latest
     echo "==> done. pi version now: $("$PI_BIN" --version)"
     exit 0
     ;;
