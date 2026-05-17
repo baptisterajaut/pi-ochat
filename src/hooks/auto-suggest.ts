@@ -91,8 +91,10 @@ export function registerAutoSuggest(pi: ExtensionAPI): void {
     try { showWidget(ctx, null); } catch { /* ctx stale */ }
   });
 
-  pi.on("message_end", async (event, ctx) => {
-    if (event.message.role !== "assistant") return;
+  // Use `agent_end` (loop done), not `message_end` (fires after every tool
+  // call, intermediate assistant message, and tool_result). Auto-suggest
+  // should only fire once the model has actually stopped responding.
+  pi.on("agent_end", async (_event, ctx) => {
     // Don't fire side-calls or touch UI in non-interactive (--print) mode.
     let hasUI = false;
     try { hasUI = ctx.hasUI; } catch { return; }
