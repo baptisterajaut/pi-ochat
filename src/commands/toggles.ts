@@ -28,15 +28,22 @@ export function registerToggleCommands(pi: ExtensionAPI): void {
     handler: async (_args, ctx) => toggleBool("append_local_prompt", ctx, "project context"),
   });
 
+  const LEVELS: ThinkingLevel[] = ["off", "minimal", "low", "medium", "high", "xhigh"];
   pi.registerCommand("thinking", {
-    description: "Cycle thinking level: off → minimal → low → medium → high → xhigh → off",
-    handler: async (_args, ctx) => {
-      const order: ThinkingLevel[] = ["off", "minimal", "low", "medium", "high", "xhigh"];
-      const cur = pi.getThinkingLevel();
-      const idx = order.indexOf(cur);
-      const next: ThinkingLevel = order[(idx + 1) % order.length] ?? "off";
+    description: "Set thinking level — usage: /thinking [off|minimal|low|medium|high|xhigh]",
+    handler: async (args, ctx) => {
+      const arg = args.trim().toLowerCase();
+      if (!arg) {
+        const cur = pi.getThinkingLevel();
+        ctx.ui.notify(`thinking: ${cur}  (levels: ${LEVELS.join(", ")})`, "info");
+        return;
+      }
+      if (!LEVELS.includes(arg as ThinkingLevel)) {
+        ctx.ui.notify(`unknown level "${arg}" — try one of: ${LEVELS.join(", ")}`, "warning");
+        return;
+      }
+      const next = arg as ThinkingLevel;
       pi.setThinkingLevel(next);
-      // Mirror in config for status display (boolean: on if any level != "off")
       const cfg = loadConfig(paths.configFile());
       saveConfig(paths.configFile(), { ...cfg, thinking: next !== "off" });
       ctx.ui.notify(`thinking: ${next}`, "info");

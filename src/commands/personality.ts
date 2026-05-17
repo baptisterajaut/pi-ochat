@@ -35,7 +35,12 @@ export function registerPersonalityCommands(pi: ExtensionAPI): void {
 
     saveConfig(paths.configFile(), { ...config, personality: pick });
     refreshHeader();
-    ctx.ui.notify(`personality: ${pick}`, "info");
+    ctx.ui.notify(`personality: ${pick} — starting new session`, "info");
+    // The personality is prepended to the system prompt in `before_agent_start`,
+    // which only fires when a session starts. Switching personality mid-session
+    // would leave the previous persona baked into the history. Spawn a fresh
+    // session so the new personality takes effect immediately.
+    await ctx.newSession();
   };
 
   pi.registerCommand("p", { description: "List/switch personality", handler });

@@ -11,7 +11,7 @@ const LINES = [
   "  /stats, /st                 Show TTFT / t/s / tokens / ctx%",
   "  /suggest                    Toggle auto-suggest ghost line",
   "  /stream                     Toggle streaming vs buffered output",
-  "  /thinking                   Cycle thinking level (off/low/medium/high)",
+  "  /thinking [level]           Set thinking level (off/minimal/low/medium/high/xhigh)",
   "  /project                    Toggle project-local AGENTS.md in system prompt",
   "  /help                       This help",
   "Shortcuts: Ctrl+L clear, Ctrl+R retry, Ctrl+U undo (all double-press); Ctrl+G impersonate.",

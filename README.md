@@ -50,7 +50,7 @@ cd /tmp/pi-ochat && npm install
 
 | Command | Aliases | What |
 |---|---|---|
-| `/p` | `/personality` | List or switch personality (`/p`, `/p 2`, `/p creative`) |
+| `/p` | `/personality` | List or switch personality (`/p`, `/p 2`, `/p creative`) — switch starts a fresh session |
 | `/profile` | — | List or switch profile bundle (model + personality) |
 | `/impersonate` | `/imp` `/gen` `/generate` | Generate a long user-message suggestion into the editor |
 | `/imps` | — | Short variant (under 15 words) |
@@ -59,7 +59,7 @@ cd /tmp/pi-ochat && npm install
 | `/stats` | `/st` | Show TTFT / t/s / tokens / ctx% |
 | `/suggest` | — | Toggle auto-suggest ghost line |
 | `/stream` | — | Toggle streaming vs buffered (`*thought for Xs*` prefix) |
-| `/thinking` | — | Cycle thinking level off → minimal → low → medium → high → xhigh |
+| `/thinking [level]` | — | Set thinking level (off/minimal/low/medium/high/xhigh) — no arg shows current |
 | `/project` | — | Toggle project-local AGENTS.md inclusion in system prompt |
 | `/help` | — | Help listing |
 
