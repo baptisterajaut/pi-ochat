@@ -71,11 +71,22 @@ Pi natives keep working: `/compact`, `/tree`, `/fork`, `/clone`, `/new`, `/resum
 
 Pi reserves several of these keys. `ctrl+l` is bound to both `app.model.select` and `app.tree.filter.labeledOnly`, `ctrl+u` to both `app.tree.filter.userOnly` and `tui.editor.deleteToLineStart`, `ctrl+g` to `app.editor.external`, `ctrl+r` to `app.session.rename`. Out of the box, the reserved-override ones silently drop our shortcuts and the others log a startup warning. Run `./install.sh --bind-ochat-keys` to unbind all six pi built-ins in `~/.pi/agent/keybindings.json`. After that, all four ochat shortcuts work and the warnings disappear.
 
+## Remote backends
+
+Auto-detect only probes `localhost`. To point pi-ochat at a llama.cpp or Ollama server elsewhere on the LAN, set env vars before launching:
+
+```bash
+PI_OCHAT_LLAMA_CPP_URL=http://192.168.1.50:8080 pi-ochat
+PI_OCHAT_OLLAMA_URL=http://gpu-box.lan:11434 pi-ochat
+```
+
+Trailing slashes tolerated. Unset → defaults to `http://localhost:8080` / `http://localhost:11434`.
+
 ## Migrating from ochat (Python)
 
 1. Copy `~/.config/ochat/personalities/*.md` → `~/.pi/agent/personalities/`.
 2. Rename project-local `agent.md` / `system.md` → `AGENTS.md`.
-3. Declare backends in `~/.pi/agent/models.json` if you do not run Ollama / llama.cpp on default ports (otherwise pi-ochat auto-detects them).
+3. If your llama.cpp / Ollama runs on a non-default host, use the env vars above (or declare a custom provider in `~/.pi/agent/models.json`).
 
 ## Known limitations (v0.1)
 

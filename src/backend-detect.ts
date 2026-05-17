@@ -19,6 +19,17 @@ interface OpenAIModelsResponse {
 
 const TIMEOUT_MS = 800;
 
+// Honor env-var overrides so users on a LAN can point pi-ochat at a remote
+// llama.cpp / Ollama. Trailing slash tolerated. Empty/unset → localhost default.
+function baseUrl(envName: string, fallback: string): string {
+  const raw = process.env[envName];
+  if (!raw) return fallback;
+  return raw.replace(/\/+$/, "");
+}
+
+const OLLAMA_BASE = baseUrl("PI_OCHAT_OLLAMA_URL", "http://localhost:11434");
+const LLAMA_CPP_BASE = baseUrl("PI_OCHAT_LLAMA_CPP_URL", "http://localhost:8080");
+
 async function probe(url: string): Promise<Response | null> {
   try {
     const ctl = new AbortController();
@@ -32,13 +43,13 @@ async function probe(url: string): Promise<Response | null> {
 }
 
 async function tryOllama(pi: ExtensionAPI): Promise<boolean> {
-  const res = await probe("http://localhost:11434/api/tags");
+  const res = await probe(`${OLLAMA_BASE}/api/tags`);
   if (!res) return false;
   const json = (await res.json()) as OllamaTagsResponse;
   if (!Array.isArray(json.models) || json.models.length === 0) return false;
   pi.registerProvider("ollama-local", {
     name: "Ollama (local)",
-    baseUrl: "http://localhost:11434/v1",
+    baseUrl: `${OLLAMA_BASE}/v1`,
     apiKey: "OLLAMA_API_KEY",
     api: "openai-completions",
     models: json.models.map((m) => ({
@@ -60,13 +71,13 @@ async function tryOllama(pi: ExtensionAPI): Promise<boolean> {
 }
 
 async function tryLlamaCpp(pi: ExtensionAPI): Promise<boolean> {
-  const res = await probe("http://localhost:8080/v1/models");
+  const res = await probe(`${LLAMA_CPP_BASE}/v1/models`);
   if (!res) return false;
   const json = (await res.json()) as OpenAIModelsResponse;
   if (!Array.isArray(json.data) || json.data.length === 0) return false;
   pi.registerProvider("llama-cpp-local", {
     name: "llama.cpp (local)",
-    baseUrl: "http://localhost:8080/v1",
+    baseUrl: `${LLAMA_CPP_BASE}/v1`,
     apiKey: "LLAMA_CPP_API_KEY",
     api: "openai-completions",
     models: json.data.map((m) => ({
