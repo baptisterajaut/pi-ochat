@@ -21,13 +21,27 @@ if [ ! -x "$PI_BIN" ]; then
   fi
 fi
 
-# If the first arg is a pi maintenance subcommand (update, install, remove,
-# uninstall, list, config), run pi directly without -e. Otherwise pi treats
-# the subcommand as an initial chat prompt — `pi-ochat update` would send
-# "update" to the LLM, which is a footgun (pi's own upgrade notice tells
-# users to "run pi update", and the muscle-memory is to type that here).
+# If the first arg looks like a pi maintenance subcommand, don't load the
+# extension — otherwise pi treats the subcommand as an initial chat prompt
+# ("update" → sent to the LLM).
+#
+# `update` is special: pi's bundled-in-node_modules install can't self-update
+# (pinned by package.json). The right action is to update pi-ochat itself,
+# which bumps its bundled pi via `npm install`.
 case "${1:-}" in
-  update|install|remove|uninstall|list|config)
+  update)
+    if [ "$#" -gt 1 ]; then
+      # `pi-ochat update <source>` still makes sense for individual extensions.
+      exec "$PI_BIN" "$@"
+    fi
+    echo "==> updating pi-ochat in $REPO_DIR"
+    cd "$REPO_DIR"
+    git pull --ff-only
+    npm install
+    echo "==> done. pi version now: $("$PI_BIN" --version)"
+    exit 0
+    ;;
+  install|remove|uninstall|list|config)
     exec "$PI_BIN" "$@"
     ;;
 esac
