@@ -21,4 +21,15 @@ if [ ! -x "$PI_BIN" ]; then
   fi
 fi
 
+# If the first arg is a pi maintenance subcommand (update, install, remove,
+# uninstall, list, config), run pi directly without -e. Otherwise pi treats
+# the subcommand as an initial chat prompt — `pi-ochat update` would send
+# "update" to the LLM, which is a footgun (pi's own upgrade notice tells
+# users to "run pi update", and the muscle-memory is to type that here).
+case "${1:-}" in
+  update|install|remove|uninstall|list|config)
+    exec "$PI_BIN" "$@"
+    ;;
+esac
+
 exec "$PI_BIN" -e "$REPO_DIR/src/index.ts" "$@"
