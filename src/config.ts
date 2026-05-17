@@ -8,6 +8,11 @@ export interface OchatConfig {
   streaming: boolean;
   thinking: boolean;
   append_local_prompt: boolean;
+  // When false, replace pi's self-aware base prompt ("You are an expert coding
+  // assistant operating inside pi, a coding agent harness..." + Pi
+  // documentation section) with a neutral one. Tools, guidelines, and context
+  // are still appended by pi normally. Personality still prepends on top.
+  pi_self_aware: boolean;
   double_press_window_ms: number;
 }
 
@@ -18,6 +23,7 @@ export const DEFAULT_CONFIG: OchatConfig = {
   streaming: true,
   thinking: false,
   append_local_prompt: true,
+  pi_self_aware: true,
   double_press_window_ms: 2000,
 };
 

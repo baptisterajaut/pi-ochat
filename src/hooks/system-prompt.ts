@@ -6,7 +6,7 @@ import type { BuildSystemPromptOptions } from "@earendil-works/pi-coding-agent";
 import { paths } from "../paths.js";
 import { loadConfig } from "../config.js";
 import { loadPersonality } from "../personalities.js";
-import { rebuildWithoutLocalContext } from "../strip-context.js";
+import { filterContextFiles } from "../strip-context.js";
 
 // Deep-import buildSystemPrompt, bypassing the package's exports map (which only
 // exposes "." and "./hooks"). Strategy: walk the Node.js module resolution paths
@@ -50,26 +50,30 @@ export function registerSystemPromptHook(pi: ExtensionAPI): void {
     const config = loadConfig(paths.configFile());
 
     let prompt = event.systemPrompt;
+    const persona = config.personality
+      ? loadPersonality(paths.personalitiesDir(), config.personality)
+      : null;
 
-    // /project toggle: filter out project-local context files so that the
-    // assembled system prompt only contains global (~/.pi/agent/) context.
-    // Requires buildSystemPrompt from pi internals (deep import via absolute path).
-    // If the deep import failed at load time, this block is skipped (no-op).
-    if (!config.append_local_prompt && buildSystemPrompt !== null) {
-      prompt = rebuildWithoutLocalContext(
-        event.systemPromptOptions,
-        paths.agentDir(),
-        buildSystemPrompt,
-      );
+    // Two independent rewrites can apply: (1) drop pi's self-aware framing
+    // ("operating inside pi" + Pi documentation pointers) — when off we send
+    // the personality alone as the base prompt, with pi's context/skills/date
+    // appended around it; (2) drop project-local context files. Both go
+    // through buildSystemPrompt, so combine them in a single rebuild when
+    // either is active.
+    const overrideSelfAware = !config.pi_self_aware && persona !== null;
+    const stripLocal = !config.append_local_prompt;
+    if ((overrideSelfAware || stripLocal) && buildSystemPrompt !== null) {
+      const options: BuildSystemPromptOptions = { ...event.systemPromptOptions };
+      if (overrideSelfAware) options.customPrompt = persona ?? undefined;
+      if (stripLocal) options.contextFiles = filterContextFiles(options.contextFiles, paths.agentDir());
+      prompt = buildSystemPrompt(options);
     }
 
-    // Personality prepend: load the configured personality and prepend it
-    // to the system prompt so the LLM adopts the persona for this session.
-    if (config.personality) {
-      const persona = loadPersonality(paths.personalitiesDir(), config.personality);
-      if (persona) {
-        prompt = `${persona}\n\n${prompt}`;
-      }
+    // Personality prepend: load the configured personality and prepend it to
+    // the system prompt so the LLM adopts the persona. Skipped when the
+    // personality is already the base prompt (overrideSelfAware path above).
+    if (persona && !overrideSelfAware) {
+      prompt = `${persona}\n\n${prompt}`;
     }
 
     return { systemPrompt: prompt };

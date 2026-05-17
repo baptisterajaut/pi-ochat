@@ -13,6 +13,7 @@ const LINES = [
   "  /stream                     Toggle streaming vs buffered output",
   "  /thinking [level]           Set thinking level (off/minimal/low/medium/high/xhigh)",
   "  /project                    Toggle project-local AGENTS.md in system prompt",
+  "  /pi-aware                   Toggle pi's self-aware base prompt",
   "  /help                       This help",
   "Shortcuts: Ctrl+L clear, Ctrl+R retry, Ctrl+U undo (all double-press); Ctrl+G impersonate.",
   "Pi built-ins still apply: /compact, /tree, /fork, /resume, /new, /model, etc.",

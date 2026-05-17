@@ -61,6 +61,7 @@ cd /tmp/pi-ochat && npm install
 | `/stream` | — | Toggle streaming vs buffered (`*thought for Xs*` prefix) |
 | `/thinking [level]` | — | Set thinking level (off/minimal/low/medium/high/xhigh) — no arg shows current |
 | `/project` | — | Toggle project-local AGENTS.md inclusion in system prompt |
+| `/pi-aware` | — | Toggle pi's self-aware base prompt — when off, the personality replaces it |
 | `/help` | — | Help listing |
 
 Pi natives keep working: `/compact`, `/tree`, `/fork`, `/clone`, `/new`, `/resume`, `/model`, `/export`, `/share`.

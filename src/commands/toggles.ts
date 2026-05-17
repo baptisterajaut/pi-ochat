@@ -28,6 +28,11 @@ export function registerToggleCommands(pi: ExtensionAPI): void {
     handler: async (_args, ctx) => toggleBool("append_local_prompt", ctx, "project context"),
   });
 
+  pi.registerCommand("pi-aware", {
+    description: "Toggle pi's self-aware base prompt (you-are-coding-inside-pi framing)",
+    handler: async (_args, ctx) => toggleBool("pi_self_aware", ctx, "pi self-awareness"),
+  });
+
   const LEVELS: ThinkingLevel[] = ["off", "minimal", "low", "medium", "high", "xhigh"];
   pi.registerCommand("thinking", {
     description: "Set thinking level — usage: /thinking [off|minimal|low|medium|high|xhigh]",
