@@ -16,26 +16,32 @@ export function registerPersonalityCommands(pi: ExtensionAPI): void {
         ctx.ui.notify("No personalities in " + dir, "warning");
         return;
       }
+      const active = config.personality ?? "(none)";
       const lines = names.map((n, i) => `${i + 1}. ${n}${n === config.personality ? " (active)" : ""}`).join("\n");
-      ctx.ui.notify("Personalities:\n" + lines, "info");
+      ctx.ui.notify(`Personalities (active: ${active}):\n${lines}\n\nUse "/p none" to unset.`, "info");
       return;
     }
 
-    let pick: string | null = null;
-    const asNum = Number.parseInt(arg, 10);
-    if (Number.isFinite(asNum) && asNum >= 1 && asNum <= names.length) {
-      pick = names[asNum - 1] ?? null;
-    } else if (names.includes(arg)) {
-      pick = arg;
+    let pick: string | null | "unset" = null;
+    if (arg === "none" || arg === "off" || arg === "-") {
+      pick = "unset";
+    } else {
+      const asNum = Number.parseInt(arg, 10);
+      if (Number.isFinite(asNum) && asNum >= 1 && asNum <= names.length) {
+        pick = names[asNum - 1] ?? null;
+      } else if (names.includes(arg)) {
+        pick = arg;
+      }
     }
     if (!pick) {
       ctx.ui.notify(`Unknown personality: ${arg}`, "warning");
       return;
     }
 
-    saveConfig(paths.configFile(), { ...config, personality: pick });
+    const next = pick === "unset" ? null : pick;
+    saveConfig(paths.configFile(), { ...config, personality: next });
     refreshHeader();
-    ctx.ui.notify(`personality: ${pick} — starting new session`, "info");
+    ctx.ui.notify(`personality: ${next ?? "(none)"} — starting new session`, "info");
     // The personality is prepended to the system prompt in `before_agent_start`,
     // which only fires when a session starts. Switching personality mid-session
     // would leave the previous persona baked into the history. Spawn a fresh
