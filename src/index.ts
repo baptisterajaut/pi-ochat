@@ -59,12 +59,16 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   registerCtrlCHint(pi);
 
   pi.on("session_start", async (_event, ctx) => {
-    if (detected.length === 0) {
-      ctx.ui.notify("pi-ochat: no local backends detected", "info");
-    } else {
-      ctx.ui.notify(`pi-ochat: detected ${detected.join(", ")}`, "info");
+    try {
+      if (detected.length === 0) {
+        ctx.ui.notify("pi-ochat: no local backends detected", "info");
+      } else {
+        ctx.ui.notify(`pi-ochat: detected ${detected.join(", ")}`, "info");
+      }
+      const cfg = loadConfig(paths.configFile());
+      if (cfg.profile) ctx.ui.setStatus("ochat-profile", `profile: ${cfg.profile}`);
+    } catch {
+      /* ctx stale (e.g., --print mode after session replacement) */
     }
-    const cfg = loadConfig(paths.configFile());
-    if (cfg.profile) ctx.ui.setStatus("ochat-profile", `profile: ${cfg.profile}`);
   });
 }

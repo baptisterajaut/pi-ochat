@@ -54,6 +54,7 @@ export function registerAutoSuggest(pi: ExtensionAPI): void {
   // The factory wraps the built-in provider: when the editor is empty and we have
   // a suggestion, expose it as the single autocomplete item so native Tab accepts it.
   pi.on("session_start", (_event, ctx) => {
+    try {
     ctx.ui.addAutocompleteProvider((current: AutocompleteProvider): AutocompleteProvider => ({
       async getSuggestions(lines, cursorLine, cursorCol, options): Promise<AutocompleteSuggestions | null> {
         const isEmpty = lines.length === 1 && (lines[0] ?? "").length === 0;
@@ -77,6 +78,7 @@ export function registerAutoSuggest(pi: ExtensionAPI): void {
         return current.shouldTriggerFileCompletion?.(lines, cursorLine, cursorCol) ?? true;
       },
     }));
+    } catch { /* ctx stale (e.g., --print mode) */ }
   });
 
   // Cancel pending suggest and clear ghost line when user starts typing.
@@ -86,11 +88,15 @@ export function registerAutoSuggest(pi: ExtensionAPI): void {
       state.controller = null;
     }
     state.current = null;
-    showWidget(ctx, null);
+    try { showWidget(ctx, null); } catch { /* ctx stale */ }
   });
 
   pi.on("message_end", async (event, ctx) => {
     if (event.message.role !== "assistant") return;
+    // Don't fire side-calls or touch UI in non-interactive (--print) mode.
+    let hasUI = false;
+    try { hasUI = ctx.hasUI; } catch { return; }
+    if (!hasUI) return;
     const cfg = loadConfig(paths.configFile());
     if (!cfg.auto_suggest) return;
     if (ctx.ui.getEditorText().trim().length > 0) return;

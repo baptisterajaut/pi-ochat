@@ -14,20 +14,20 @@ export function registerStreamBuffer(pi: ExtensionAPI): void {
     state.enabled = loadConfig(paths.configFile()).streaming;
     state.t0 = Date.now();
     if (!state.enabled) {
-      ctx.ui.setWorkingMessage("thinking (buffered)...");
+      try { ctx.ui.setWorkingMessage("thinking (buffered)..."); } catch { /* ctx stale */ }
     }
   });
 
   pi.on("message_end", async (event, ctx) => {
     if (event.message.role !== "assistant") return;
     if (state.enabled || state.t0 === null) {
-      ctx.ui.setWorkingMessage();
+      try { ctx.ui.setWorkingMessage(); } catch { /* ctx stale */ }
       state.t0 = null;
       return;
     }
     const dt = ((Date.now() - state.t0) / 1000).toFixed(1);
     state.t0 = null;
-    ctx.ui.setWorkingMessage();
+    try { ctx.ui.setWorkingMessage(); } catch { /* ctx stale */ }
 
     const original = event.message;
     if (!Array.isArray(original.content)) return;

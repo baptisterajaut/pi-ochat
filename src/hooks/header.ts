@@ -102,20 +102,24 @@ export function registerHeader(pi: ExtensionAPI, detected: string[]): void {
   state.detected = detected;
 
   pi.on("session_start", async (_event, ctx) => {
-    state.modelId = ctx.model?.id ?? "no model selected";
-    reloadConfig();
-    if (!ctx.hasUI) return;
-    ctx.ui.setHeader((tui) => {
-      state.requestRender = () => tui.requestRender();
-      return {
-        render(width: number) {
-          return renderHeader(width);
-        },
-        invalidate() {
-          tui.requestRender();
-        },
-      };
-    });
+    try {
+      state.modelId = ctx.model?.id ?? "no model selected";
+      reloadConfig();
+      if (!ctx.hasUI) return;
+      ctx.ui.setHeader((tui) => {
+        state.requestRender = () => tui.requestRender();
+        return {
+          render(width: number) {
+            return renderHeader(width);
+          },
+          invalidate() {
+            tui.requestRender();
+          },
+        };
+      });
+    } catch {
+      /* ctx stale (e.g., --print mode after session replacement) */
+    }
   });
 
   pi.on("model_select", async (event) => {
@@ -124,7 +128,14 @@ export function registerHeader(pi: ExtensionAPI, detected: string[]): void {
   });
 
   pi.on("session_shutdown", async (_event, ctx) => {
-    if (ctx.hasUI) ctx.ui.setHeader(undefined);
+    // Pi may invalidate ctx before this fires (notably in --print mode), so any
+    // property access can throw. We don't need to clear the header in that case
+    // anyway — pi is tearing the runner down.
+    try {
+      if (ctx.hasUI) ctx.ui.setHeader(undefined);
+    } catch {
+      /* ctx stale — nothing to clean up on the UI side */
+    }
     state.requestRender = null;
   });
 }
