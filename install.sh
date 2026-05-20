@@ -64,16 +64,16 @@ if [ "$EXT_SYMLINK" = "1" ]; then
 fi
 
 if [ "$LAUNCHER" = "1" ]; then
-  mkdir -p "$HOME/bin"
-  LAUNCHER_LINK="$HOME/bin/pi-ochat"
+  mkdir -p "$HOME/.local/bin"
+  LAUNCHER_LINK="$HOME/.local/bin/pi-ochat"
   if [ -L "$LAUNCHER_LINK" ] || [ -e "$LAUNCHER_LINK" ]; then
     rm -f "$LAUNCHER_LINK"
   fi
   ln -s "$REPO_DIR/pi-ochat.sh" "$LAUNCHER_LINK"
   echo "==> launcher installed: $LAUNCHER_LINK -> $REPO_DIR/pi-ochat.sh"
   case ":$PATH:" in
-    *":$HOME/bin:"*) ;;
-    *) echo "    note: ~/bin is not in your PATH. Add it (e.g. in ~/.zshrc): export PATH=\"\$HOME/bin:\$PATH\"" ;;
+    *":$HOME/.local/bin:"*) ;;
+    *) echo "    note: ~/.local/bin is not in your PATH. Add it (e.g. in ~/.zshrc): export PATH=\"$HOME/.local/bin:\$PATH\"" ;;
   esac
 fi
 
@@ -131,7 +131,7 @@ if [ "$EXT_SYMLINK" = "1" ]; then
   echo "  - Run 'pi' to use it (extension auto-loaded)."
 fi
 if [ "$LAUNCHER" = "1" ]; then
-  echo "  - Or run 'pi-ochat' to launch pi with this extension explicitly."
+  echo "  - Or run 'pi-ochat' to launch pi with this extension explicitly (symlinked to ~/.local/bin)."
 fi
 if [ "$BIND_KEYS" = "1" ]; then
   echo "  - ctrl+l/r/u/g now belong to pi-ochat (pi built-ins unbound)."
