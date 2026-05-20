@@ -24,6 +24,7 @@ const TITLE_LINES = [
 
 interface HeaderState {
   modelId: string;
+  activeProvider: string | null;
   detected: string[];
   config: OchatConfig | null;
   requestRender: (() => void) | null;
@@ -31,6 +32,7 @@ interface HeaderState {
 
 const state: HeaderState = {
   modelId: "no model selected",
+  activeProvider: null,
   detected: [],
   config: null,
   requestRender: null,
@@ -81,7 +83,12 @@ function center(text: string, width: number): string {
 function subtitleText(): string {
   const cfg = state.config;
   const parts: string[] = [];
-  if (state.detected.length > 0) parts.push(state.detected.join("+"));
+  // Only surface a local backend in the subtitle when the active model actually
+  // uses it. Listing every responding localhost backend (the old behaviour) was
+  // misleading when the user pointed pi at a remote provider.
+  if (state.activeProvider && state.detected.includes(state.activeProvider)) {
+    parts.push(state.activeProvider);
+  }
   parts.push(state.modelId);
   if (cfg?.personality) parts.push(`personality: ${cfg.personality}`);
   if (cfg?.profile) parts.push(`profile: ${cfg.profile}`);
@@ -104,6 +111,7 @@ export function registerHeader(pi: ExtensionAPI, detected: string[]): void {
   pi.on("session_start", async (_event, ctx) => {
     try {
       state.modelId = ctx.model?.id ?? "no model selected";
+      state.activeProvider = ctx.model?.provider ?? null;
       reloadConfig();
       if (!ctx.hasUI) return;
       ctx.ui.setHeader((tui) => {
@@ -124,6 +132,7 @@ export function registerHeader(pi: ExtensionAPI, detected: string[]): void {
 
   pi.on("model_select", async (event) => {
     state.modelId = event.model?.id ?? state.modelId;
+    state.activeProvider = event.model?.provider ?? state.activeProvider;
     refreshHeader();
   });
 

@@ -15,6 +15,7 @@ import { registerStreamBuffer } from "./hooks/stream-buffer.js";
 import { registerHelpCommand } from "./commands/help.js";
 import { registerHeader } from "./hooks/header.js";
 import { registerCtrlCHint } from "./hooks/ctrlc-hint.js";
+import { registerScratchpad } from "./scratchpad.js";
 import { paths } from "./paths.js";
 import { ensureBundledPersonalities } from "./personalities.js";
 import { loadConfig } from "./config.js";
@@ -57,14 +58,19 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   registerStreamBuffer(pi);
   registerHelpCommand(pi);
   registerCtrlCHint(pi);
+  registerScratchpad(pi);
 
   pi.on("session_start", async (_event, ctx) => {
     try {
+      const activeProvider = ctx.model?.provider;
       if (detected.length === 0) {
         ctx.ui.notify("pi-ochat: no local backends detected", "info");
-      } else {
-        ctx.ui.notify(`pi-ochat: detected ${detected.join(", ")}`, "info");
+      } else if (activeProvider && detected.includes(activeProvider)) {
+        ctx.ui.notify(`pi-ochat: using ${activeProvider}`, "info");
       }
+      // else: local backends responded but the active model isn't one of them
+      // (e.g., user points pi at a remote provider). Stay silent rather than
+      // announce an irrelevant detection.
       const cfg = loadConfig(paths.configFile());
       if (cfg.profile) ctx.ui.setStatus("ochat-profile", `profile: ${cfg.profile}`);
     } catch {
